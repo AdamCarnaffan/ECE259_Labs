@@ -39,11 +39,6 @@ module part2 (SW, LEDR);
     assign LEDR[1] = M[1];
     assign LEDR[2] = M[2];
     assign LEDR[3] = M[3];
-    assign LEDR[4] = 1'b0;
-    assign LEDR[5] = 1'b0;
-    assign LEDR[6] = 1'b0;
-    assign LEDR[6] = 1'b0;
-    assign LEDR[8] = 1'b0;
 endmodule
 
 
@@ -65,17 +60,9 @@ module part3 (SW, LEDR);
     assign S[0] = SW[9];
     assign S[1] = SW[8];
     // Get Outputs
-    assign M[0] = (~S[1] & ((~S[0] & U[0]) | (S[0] & V[0]))) | (S[1] & W[0])
-    assign M[1] = (~S[1] & ((~S[0] & U[1]) | (S[0] & V[1]))) | (S[1] & W[1])
+    assign M[0] = (~S[1] & ((~S[0] & U[0]) | (S[0] & V[0]))) | (S[1] & W[0]);
+    assign M[1] = (~S[1] & ((~S[0] & U[1]) | (S[0] & V[1]))) | (S[1] & W[1]);
     // Output
     assign LEDR[0] = M[0];
     assign LEDR[1] = M[1];
-    assign LEDR[2] = 1'b0;
-    assign LEDR[3] = 1'b0;
-    assign LEDR[4] = 1'b0;
-    assign LEDR[5] = 1'b0;
-    assign LEDR[6] = 1'b0;
-    assign LEDR[6] = 1'b0;
-    assign LEDR[8] = 1'b0;
-    assign LEDR[9] = 1'b0;
 endmodule
