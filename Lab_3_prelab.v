@@ -6,13 +6,13 @@ module part4 (SW, HEX0);
     input [1:0] SW; // Get switches
     output [6:0] HEX0; // Get output hex
     // Assign outputs
-    assign HEX0[0] = ~(SW[0] & SW[1]);
-    assign HEX0[1] = ~SW[1];
-    assign HEX0[2] = (SW[0] & ~SW[1]) | (SW[1] & ~SW[0]);
-    assign HEX0[3] = ~(SW[0] & SW[1]);
-    assign HEX0[4] = ~SW[0] & ~SW[1];
-    assign HEX0[5] = ~SW[0] & SW[1];
-    assign HEX0[6] = ~(SW[0] & SW[1]);
+    assign HEX0[0] = SW[0] & SW[1];
+    assign HEX0[1] = SW[0];
+    assign HEX0[2] = (SW[0] & SW[1]) | (~SW[0] & ~SW[1]);
+    assign HEX0[3] = SW[0] & SW[1];
+    assign HEX0[4] = SW[0] | SW[1];
+    assign HEX0[5] = ~SW[0] | SW[1];
+    assign HEX0[6] = SW[0] & SW[1];
 endmodule
 
 ////////////
@@ -21,18 +21,18 @@ endmodule
 
 module char_7seg (C, Display);
     input [1:0] C; // Get switches
-    output [6:0] Display; // Get output hex
+    output [6:0] Display; // Get output
     // Assign outputs
-    assign Display[0] = ~(C[0] & C[1]);
-    assign Display[1] = ~C[1];
-    assign Display[2] = (C[0] & ~C[1]) | (C[1] & ~C[0]);
-    assign Display[3] = ~(C[0] & C[1]);
-    assign Display[4] = ~C[0] & ~C[1];
-    assign Display[5] = ~C[0] & C[1];
-    assign Display[6] = ~(C[0] & C[1]);
+    assign Display[0] = C[0] & C[1];
+    assign Display[1] = C[0];
+    assign Display[2] = (C[0] & C[1]) | (~C[0] & ~C[1]);
+    assign Display[3] = C[0] & C[1];
+    assign Display[4] = C[0] | C[1];
+    assign Display[5] = ~C[0] | C[1];
+    assign Display[6] = C[0] & C[1];
 endmodule
 
-module mux_2bit_3to1 (S, U, V, W, M)
+module mux_2bit_3to1 (S, U, V, W, M);
     input [1:0] S, U, V, W;
     output [1:0] M;
     // Assign outputs
