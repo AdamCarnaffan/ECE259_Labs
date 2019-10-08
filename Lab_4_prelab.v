@@ -183,6 +183,40 @@ endmodule
 /// Part 5 ///
 //////////////
 
+module adder(A, B, Cin, S, Cout); // Copied from part3
+    // Get inputs
+    input A, B, Cin;
+    output S, Cout;
+    // Make assignments
+    assign S = (B & Cin) | (A & B) | (A & Cin);
+    assign Cout = (Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
+endmodule
+
+module conv_9_5bit_4bit(VAL, RET); // from part4
+    // Get inputs
+    input [4:0] VAL;
+    output [3:0] RET;
+    // Make assignments
+    assign RET[0] = VAL[0];
+    assign RET[1] = ~VAL[1];
+    assign RET[2] = (VAL[3] & VAL[2] & VAL[1]) | (~VAL[3] & ~VAL[1]);
+    assign RET[3] = VAL[4] & VAL[1];
+endmodule
+
+module hex_disp(C, Display); // From part1
+    // Get inputs
+    input [3:0] C;
+    output [6:0] Display;
+    // Make assignments
+    assign Display[0] = ~C[3] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
+    assign Display[1] = C[2] & ((C[0] & ~C[1]) | (~C[0] & C[1]));
+    assign Display[2] = C[0] & ~C[1] & C[2] & C[3];
+    assign Display[3] = (C[0] & ~C[1] & ~C[2]) | (~C[3] & C[2] & ((~C[0] & ~C[1]) | (C[0] & C[1])));
+    assign Display[4] = (~C[1] & ~C[3] & (C[0] | (~C[0] & C[2]))) | (C[0] & ((~C[1] & ~C[2] & C[3]) | (C[1] & ~C[3])));
+    assign Display[5] = ~C[3] & ((C[1] & ~C[2]) | (C[0] & ((~C[1] & ~C[2]) | (C[1] & C[2]))));
+    assign Display[6] = ~C[3] & ((~C[1] & ~C[2]) | (C[0] & C[1] & C[2]));
+endmodule
+
 module part5(SW, HEX0, HEX1, HEX4, HEX5);
     // Get inputs
     input [9:0] SW;
