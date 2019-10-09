@@ -7,11 +7,11 @@ module hex_disp(C, Display);
     input [3:0] C;
     output [6:0] Display;
     // Make assignments
-    assign Display[0] = ~C[3] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
+    assign Display[0] = ~C[3] & ~C[1] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
     assign Display[1] = C[2] & ((C[0] & ~C[1]) | (~C[0] & C[1]));
-    assign Display[2] = C[0] & ~C[1] & C[2] & C[3];
-    assign Display[3] = (C[0] & ~C[1] & ~C[2]) | (~C[3] & C[2] & ((~C[0] & ~C[1]) | (C[0] & C[1])));
-    assign Display[4] = (~C[1] & ~C[3] & (C[0] | (~C[0] & C[2]))) | (C[0] & ((~C[1] & ~C[2] & C[3]) | (C[1] & ~C[3])));
+    assign Display[2] = ~C[0] & C[1] & ~C[2] & ~C[3];
+    assign Display[3] = ~C[3] & ((~C[2] & ~C[1] & C[0]) | (C[2] & ((~C[1] & ~C[0]) | (C[1] & C[0]))));
+    assign Display[4] = C[0] | (~C[1] & C[2]);
     assign Display[5] = ~C[3] & ((C[1] & ~C[2]) | (C[0] & ((~C[1] & ~C[2]) | (C[1] & C[2]))));
     assign Display[6] = ~C[3] & ((~C[1] & ~C[2]) | (C[0] & C[1] & C[2]));
 endmodule
@@ -34,11 +34,11 @@ module hex_disp(C, Display); // From part1
     input [3:0] C;
     output [6:0] Display;
     // Make assignments
-    assign Display[0] = ~C[3] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
+    assign Display[0] = ~C[3] & ~C[1] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
     assign Display[1] = C[2] & ((C[0] & ~C[1]) | (~C[0] & C[1]));
-    assign Display[2] = C[0] & ~C[1] & C[2] & C[3];
-    assign Display[3] = (C[0] & ~C[1] & ~C[2]) | (~C[3] & C[2] & ((~C[0] & ~C[1]) | (C[0] & C[1])));
-    assign Display[4] = (~C[1] & ~C[3] & (C[0] | (~C[0] & C[2]))) | (C[0] & ((~C[1] & ~C[2] & C[3]) | (C[1] & ~C[3])));
+    assign Display[2] = ~C[0] & C[1] & ~C[2] & ~C[3];
+    assign Display[3] = ~C[3] & ((~C[2] & ~C[1] & C[0]) | (C[2] & ((~C[1] & ~C[0]) | (C[1] & C[0]))));
+    assign Display[4] = C[0] | (~C[1] & C[2]);
     assign Display[5] = ~C[3] & ((C[1] & ~C[2]) | (C[0] & ((~C[1] & ~C[2]) | (C[1] & C[2]))));
     assign Display[6] = ~C[3] & ((~C[1] & ~C[2]) | (C[0] & C[1] & C[2]));
 endmodule
@@ -132,11 +132,11 @@ module hex_disp(C, Display); // From part1
     input [3:0] C;
     output [6:0] Display;
     // Make assignments
-    assign Display[0] = ~C[3] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
+    assign Display[0] = ~C[3] & ~C[1] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
     assign Display[1] = C[2] & ((C[0] & ~C[1]) | (~C[0] & C[1]));
-    assign Display[2] = C[0] & ~C[1] & C[2] & C[3];
-    assign Display[3] = (C[0] & ~C[1] & ~C[2]) | (~C[3] & C[2] & ((~C[0] & ~C[1]) | (C[0] & C[1])));
-    assign Display[4] = (~C[1] & ~C[3] & (C[0] | (~C[0] & C[2]))) | (C[0] & ((~C[1] & ~C[2] & C[3]) | (C[1] & ~C[3])));
+    assign Display[2] = ~C[0] & C[1] & ~C[2] & ~C[3];
+    assign Display[3] = ~C[3] & ((~C[2] & ~C[1] & C[0]) | (C[2] & ((~C[1] & ~C[0]) | (C[1] & C[0]))));
+    assign Display[4] = C[0] | (~C[1] & C[2]);
     assign Display[5] = ~C[3] & ((C[1] & ~C[2]) | (C[0] & ((~C[1] & ~C[2]) | (C[1] & C[2]))));
     assign Display[6] = ~C[3] & ((~C[1] & ~C[2]) | (C[0] & C[1] & C[2]));
 endmodule
@@ -208,11 +208,11 @@ module hex_disp(C, Display); // From part1
     input [3:0] C;
     output [6:0] Display;
     // Make assignments
-    assign Display[0] = ~C[3] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
+    assign Display[0] = ~C[3] & ~C[1] & ((C[0] & ~C[2]) | (~C[0] & C[2]));
     assign Display[1] = C[2] & ((C[0] & ~C[1]) | (~C[0] & C[1]));
-    assign Display[2] = C[0] & ~C[1] & C[2] & C[3];
-    assign Display[3] = (C[0] & ~C[1] & ~C[2]) | (~C[3] & C[2] & ((~C[0] & ~C[1]) | (C[0] & C[1])));
-    assign Display[4] = (~C[1] & ~C[3] & (C[0] | (~C[0] & C[2]))) | (C[0] & ((~C[1] & ~C[2] & C[3]) | (C[1] & ~C[3])));
+    assign Display[2] = ~C[0] & C[1] & ~C[2] & ~C[3];
+    assign Display[3] = ~C[3] & ((~C[2] & ~C[1] & C[0]) | (C[2] & ((~C[1] & ~C[0]) | (C[1] & C[0]))));
+    assign Display[4] = C[0] | (~C[1] & C[2]);
     assign Display[5] = ~C[3] & ((C[1] & ~C[2]) | (C[0] & ((~C[1] & ~C[2]) | (C[1] & C[2]))));
     assign Display[6] = ~C[3] & ((~C[1] & ~C[2]) | (C[0] & C[1] & C[2]));
 endmodule
