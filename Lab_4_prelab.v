@@ -86,8 +86,8 @@ module adder(A, B, Cin, S, Cout);
     input A, B, Cin;
     output S, Cout;
     // Make assignments
-    assign S = (B & Cin) | (A & B) | (A & Cin);
-    assign Cout = (Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
+    assign Cout = (B & Cin) | (A & ((~B & Cin) | (B & ~Cin)));
+    assign S = (~Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
 endmodule
 
 module part3(SW, LEDR);
@@ -98,7 +98,7 @@ module part3(SW, LEDR);
     // Make assignments
     adder A0 (SW[0], SW[4], SW[8], LEDR[0], C0);
     adder A1 (SW[1], SW[5], C0, LEDR[1], C1);
-    adder A2 (SW[2], SW[6], C1, LEDR[2], C12;
+    adder A2 (SW[2], SW[6], C1, LEDR[2], C2);
     adder A3 (SW[3], SW[7], C2, LEDR[3], C3);
     assign LEDR[4] = C3;
 endmodule
@@ -112,8 +112,8 @@ module adder(A, B, Cin, S, Cout); // Copied from part3
     input A, B, Cin;
     output S, Cout;
     // Make assignments
-    assign S = (B & Cin) | (A & B) | (A & Cin);
-    assign Cout = (Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
+    assign Cout = (B & Cin) | (A & ((~B & Cin) | (B & ~Cin)));
+    assign S = (~Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
 endmodule
 
 module conv_9_5bit_4bit(VAL, RET); // Copied concept from part2
@@ -143,10 +143,10 @@ endmodule
 
 module part4(SW, LEDR, HEX0, HEX1, HEX4, HEX5);
     // Get inputs
-    input [9:0] SW;
+    input [8:0] SW;
     output [6:0] HEX0, HEX1, HEX4, HEX5;
     output [9:0] LEDR;
-    wire [3:0] X, Y, Disp0, Disp1;
+    wire [3:0] X, Y, A, Disp0, Disp1;
     wire [4:0] Res; // Result of addition
     wire C0, C1, C2, C3, C4, r;
     // Make assignments
@@ -162,21 +162,23 @@ module part4(SW, LEDR, HEX0, HEX1, HEX4, HEX5);
     adder A3 (X[3], Y[3], C3, Res[3], C4);
     assign Res[4] = C4;
     // Assign display values
-    assign r = 0; // boolean to determine if disp1 is 1 or 0
-    conv_9_5bit_4bit Cv (Res, Disp0);
+    assign r = Res[4] | (Res[3] & (Res[2] | (Res[1] & Res[0]))); // boolean to determine if disp1 is 1 or 0
+    conv_9_5bit_4bit Cv (Res, A);
     // Assign Disp0 values individually
-    assign Disp0[0] = (~r & Res[0]) | (r & Disp[0]);
-    assign Disp0[1] = (~r & Res[1]) | (r & Disp[1]);
-    assign Disp0[2] = (~r & Res[2]) | (r & Disp[2]);
-    assign Disp0[3] = (~r & Res[3]) | (r & Disp[3]);
+    assign Disp0[0] = (~r & Res[0]) | (r & A[0]);
+    assign Disp0[1] = (~r & Res[1]) | (r & A[1]);
+    assign Disp0[2] = (~r & Res[2]) | (r & A[2]);
+    assign Disp0[3] = (~r & Res[3]) | (r & A[3]);
     // Get Disp1
-    assign Disp1 = 4'b0;
+    assign Disp1[3:1] = 3'b0;
     assign Disp1[0] = r;
     // Display values
     hex_disp D0 (Disp0, HEX0);
     hex_disp D1 (Disp1, HEX1);
     hex_disp D4 (X, HEX4);
     hex_disp D5 (Y, HEX5);
+    // Import LED Values
+    assign LEDR[4:0] = Res;
 endmodule
 
 //////////////
@@ -188,8 +190,8 @@ module adder(A, B, Cin, S, Cout); // Copied from part3
     input A, B, Cin;
     output S, Cout;
     // Make assignments
-    assign S = (B & Cin) | (A & B) | (A & Cin);
-    assign Cout = (Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
+    assign Cout = (B & Cin) | (A & ((~B & Cin) | (B & ~Cin)));
+    assign S = (~Cin & ((~A & B) | (A & ~B))) | (Cin & ((~A & ~B) | (A & B)));
 endmodule
 
 module conv_9_5bit_4bit(VAL, RET); // from part4
@@ -221,9 +223,10 @@ module part5(SW, HEX0, HEX1, HEX4, HEX5);
     // Get inputs
     input [9:0] SW;
     output [6:0] HEX0, HEX1, HEX4, HEX5;
-    wire [3:0] X, Y, Disp0, Disp1;
+    wire [3:0] X, Y, A;
     wire [4:0] Res; // Result of addition
     wire C0, C1, C2, C3, C4;
+    reg [3:0] Disp0, Disp1;
     // Make assignments
     assign X = SW[7:4];
     assign Y = SW[3:0];
@@ -235,13 +238,20 @@ module part5(SW, HEX0, HEX1, HEX4, HEX5);
     adder A3 (X[3], Y[3], C3, Res[3], C4);
     assign Res[4] = C4;
     // Assign display values
-    if (Resp > 9) then
+    conv_9_5bit_4bit Cv (Res, A);
+    always @(Res)
+    begin
+    if (Res > 9)
+        begin
         Disp1 = 4'b0001;
-        conv_9_5bit_4bit Cv (Res, Disp0);
-    else
+        Disp0 = A;
+        end
+    else 
+        begin
         Disp1 = 4'b0000;
         Disp0 = Res[3:0];
-    end if
+        end
+    end
     // Display values
     hex_disp D0 (Disp0, HEX0);
     hex_disp D1 (Disp1, HEX1);
