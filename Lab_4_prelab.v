@@ -162,7 +162,7 @@ module part4(SW, LEDR, HEX0, HEX1, HEX4, HEX5);
     adder A3 (X[3], Y[3], C3, Res[3], C4);
     assign Res[4] = C4;
     // Assign display values
-    assign r = Res[4] | (Res[3] & (Res[2] | (Res[1] & Res[0]))); // boolean to determine if disp1 is 1 or 0
+    assign r = Res[4] | (Res[3] & (Res[2] | Res[1])); // boolean to determine if disp1 is 1 or 0
     conv_9_5bit_4bit Cv (Res, A);
     // Assign Disp0 values individually
     assign Disp0[0] = (~r & Res[0]) | (r & A[0]);
