@@ -121,7 +121,35 @@ module disp_4bit_hex(C, Disp);
     assign Disp[6] = ~C[3] & ((~C[2] & ~C[1]) | (C[2] & C[1] & C[0]));
 endmodule
 
+module t_flip_flop(D, clk, clear, out);
+    // Get inputs
+    input D, clk, clear;
+    output out;
+    reg out;
+    always @(posedge clk)
+    begin
+        out <= D;
+    end
+    always @(clear)
+    begin
+        out <= 1'b0;
+    end
+endmodule
+
 module part3(SW, KEY, HEX0, HEX1, HEX2, HEX3)
+    // Get Inputs
+    input [1:0] SW;
+    input KEY;
+    output [6:0] HEX0, HEX1, HEX2, HEX3;
+    wire [15:0] F;
+    // Instantiate Flip Flops
+    
+    // Make display
+    disp_4bit_hex D0 (F[3:0], HEX0);
+    disp_4bit_hex D1 (F[7:4], HEX2);
+    disp_4bit_hex D2 (F[11:8], HEX3);
+    disp_4bit_hex D3 (F[15:12], HEX4);
+endmodule
 
 //////////////
 /// Part 4 ///
