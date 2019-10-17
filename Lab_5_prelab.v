@@ -124,15 +124,13 @@ endmodule
 module t_flip_flop(D, clk, clear, out);
     // Get inputs
     input D, clk, clear;
-    output out;
-    reg out;
-    always @(posedge clk)
+    output reg out;
+    always @(posedge clk, negedge clear)
     begin
+        if (clear == 0)
+            out <= 1'b0;
+        else
         out <= D;
-    end
-    always @(negedge clear)
-    begin
-        out <= 1'b0;
     end
 endmodule
 
