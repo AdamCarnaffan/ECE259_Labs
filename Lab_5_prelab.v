@@ -130,7 +130,7 @@ module t_flip_flop(D, clk, clear, out);
     begin
         out <= D;
     end
-    always @(clear)
+    always @(negedge clear)
     begin
         out <= 1'b0;
     end
@@ -143,7 +143,22 @@ module part3(SW, KEY, HEX0, HEX1, HEX2, HEX3)
     output [6:0] HEX0, HEX1, HEX2, HEX3;
     wire [15:0] F;
     // Instantiate Flip Flops
-    
+    t_flip_flop T0 (SW[0], KEY, SW[1], F[0]);
+    t_flip_flop T1 ((SW[0] & F[0]), KEY, SW[1], F[1]);
+    t_flip_flop T2 ((F[0] & F[1]), KEY, SW[1], F[2]);
+    t_flip_flop T3 ((F[1] & F[2]), KEY, SW[1], F[3]);
+    t_flip_flop T3 ((F[2] & F[3]), KEY, SW[1], F[4]);
+    t_flip_flop T3 ((F[3] & F[4]), KEY, SW[1], F[5]);
+    t_flip_flop T3 ((F[4] & F[5]), KEY, SW[1], F[6]);
+    t_flip_flop T3 ((F[5] & F[6]), KEY, SW[1], F[7]);
+    t_flip_flop T3 ((F[6] & F[7]), KEY, SW[1], F[8]);
+    t_flip_flop T3 ((F[7] & F[8]), KEY, SW[1], F[9]);
+    t_flip_flop T3 ((F[8] & F[9]), KEY, SW[1], F[10]);
+    t_flip_flop T3 ((F[9] & F[10]), KEY, SW[1], F[11]);
+    t_flip_flop T3 ((F[10] & F[11]), KEY, SW[1], F[12]);
+    t_flip_flop T3 ((F[11] & F[12]), KEY, SW[1], F[13]);
+    t_flip_flop T3 ((F[12] & F[13]), KEY, SW[1], F[14]);
+    t_flip_flop T3 ((F[13] & F[14]), KEY, SW[1], F[15]);
     // Make display
     disp_4bit_hex D0 (F[3:0], HEX0);
     disp_4bit_hex D1 (F[7:4], HEX2);
