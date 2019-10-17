@@ -159,9 +159,9 @@ module part3(SW, KEY, HEX0, HEX1, HEX2, HEX3);
     t_flip_flop T15 ((F[13] & F[14]), KEY, SW[1], F[15]);
     // Make display
     disp_4bit_hex D0 (F[3:0], HEX0);
-    disp_4bit_hex D1 (F[7:4], HEX2);
-    disp_4bit_hex D2 (F[11:8], HEX3);
-    disp_4bit_hex D3 (F[15:12], HEX4);
+    disp_4bit_hex D1 (F[7:4], HEX1);
+    disp_4bit_hex D2 (F[11:8], HEX2);
+    disp_4bit_hex D3 (F[15:12], HEX3);
 endmodule
 
 //////////////
