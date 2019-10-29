@@ -147,7 +147,7 @@ module part3(SW, KEY, LEDR, CLOCK_50);
 					end
 				CLK_LG:
 					begin
-					if (clk > 3)
+					if (clk > 9)
 						begin
 							LEDR[1] = 1;
 							DISP_ST <= N_DISP_ST;
