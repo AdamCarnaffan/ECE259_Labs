@@ -100,15 +100,15 @@ module part3(SW, KEY, LEDR, CLOCK_50);
     output reg [1:0] LEDR;
     // Wiring
     reg [2:0] N_DISP_ST, DISP_ST, LTTR_ST;
-    reg [26:0] clk, CLK_TRG;
-    reg w;
+    reg [26:0] clk;
+    reg w, CLK_TRG;
     // Parameters
     parameter A = 3'b000, B = 3'b001, C = 3'b010, D = 3'b011, E = 3'b100, F = 3'b101, G = 3'b110, H = 3'b111; // Display states
     parameter J = 3'b000, K = 3'b001, L = 3'b010, M = 3'b011, N = 3'b100, O = 3'b101, P = 3'b110, Q = 3'b111; // Letter states (literal)
-    parameter CLK_05 = 4, CLK_15 = 8; // Clocking 0.5s & 1.5s
+    parameter CLK_SH = 1'b0, CLK_LG = 1'b1; // Clocking 0.5s & 1.5s
 
 	 // Default
-	 initial CLK_TRG = CLK_05;
+	 initial CLK_TRG = CLK_SH;
 	 initial DISP_ST = H;
 	 initial N_DISP_ST = H;
 	 
@@ -125,16 +125,46 @@ module part3(SW, KEY, LEDR, CLOCK_50);
 				LTTR_ST[2:0] <= SW[2:0]; // Assign new letter input
 			   DISP_ST <= A;
 		  end
-        else if (clk > CLK_TRG)
-        begin
-				DISP_ST <= N_DISP_ST;
-            clk <= 27'b0;
-            w <= 1;
-        end
         else
 		  begin
-            clk = clk + 1;
-            w <= 0;
+			case (CLK_TRG)
+				CLK_SH:
+					begin
+					if (clk > 3)
+						begin
+							LEDR[1] = 1;
+							DISP_ST <= N_DISP_ST;
+							clk <= 27'b0;
+							w <= 1;
+						end
+					else
+						begin
+							DISP_ST <= DISP_ST;
+							LEDR[1] = 0;
+							clk <= clk + 1;
+							w <= 0;
+						end
+					end
+				CLK_LG:
+					begin
+					if (clk > 3)
+						begin
+							LEDR[1] = 1;
+							DISP_ST <= N_DISP_ST;
+							clk <= 27'b0;
+							w <= 1;
+						end
+					else
+						begin
+							DISP_ST <= DISP_ST;
+							LEDR[1] = 0;
+							clk <= clk + 1;
+							w <= 0;
+						end
+					end
+				default:
+					clk <= clk + 1;
+				endcase
 		  end
     end
 
@@ -149,23 +179,23 @@ module part3(SW, KEY, LEDR, CLOCK_50);
                 case (LTTR_ST)
                     J, L, P: // Dots
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_SH;
                     end
                     K, M, N, O, Q: // Dashes
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_15;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_LG;
                     end
                     default:
-                        LEDR[0] = 0;
+                        LEDR[0] <= 1'b0;
                 endcase
             end
             B: // Space
             begin
                 N_DISP_ST <= C; // Assign next state
-                LEDR[0] = 0;
-                CLK_TRG = CLK_05;
+                LEDR[0] <= 1'b0;
+                CLK_TRG <= CLK_SH;
             end
             C: // Second Char
             begin
@@ -173,23 +203,23 @@ module part3(SW, KEY, LEDR, CLOCK_50);
                 case (LTTR_ST)
                     K, N: // Dots
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_SH;
                     end
                     J, L, M, O, P, Q: // Dashes
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_15;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_LG;
                     end
                     default:
-                        LEDR[0] = 0;
+                        LEDR[0] <= 1'b0;
                 endcase
             end
             D: // Space
             begin
                 N_DISP_ST <= E; // Assign next state
-                LEDR[0] = 0;
-                CLK_TRG = CLK_05;
+                LEDR[0] <= 1'b0;
+                CLK_TRG <= CLK_SH;
             end
             E: // Third Char
             begin
@@ -197,28 +227,28 @@ module part3(SW, KEY, LEDR, CLOCK_50);
                 case (LTTR_ST)
                     L, Q: // Dots
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_SH;
                     end
                     J, K, O, P: // Dashes
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_15;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_LG;
                     end
                     M, N: // No values
                     begin
-                        LEDR[0] = 0;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b0;
+                        CLK_TRG <= CLK_SH;
                     end
                     default:
-                        LEDR[0] = 0;
+                        LEDR[0] <= 1'b0;
                 endcase
             end
             F: // Space
             begin
                 N_DISP_ST <= G; // Assign next state
-                LEDR[0] = 0;
-                CLK_TRG = CLK_05;
+                LEDR[0] <= 1'b0;
+                CLK_TRG <= CLK_SH;
             end
             G: // Fourth Char
             begin
@@ -226,28 +256,28 @@ module part3(SW, KEY, LEDR, CLOCK_50);
                 case (LTTR_ST)
                     L, P: // Dots
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_SH;
                     end
                     J, Q: // Dashes
                     begin
-                        LEDR[0] = 1;
-                        CLK_TRG = CLK_15;
+                        LEDR[0] <= 1'b1;
+                        CLK_TRG <= CLK_LG;
                     end
                     K, M, N, O: // No values
                     begin
-                        LEDR[0] = 0;
-                        CLK_TRG = CLK_05;
+                        LEDR[0] <= 1'b0;
+                        CLK_TRG <= CLK_SH;
                     end
                     default:
-                        LEDR[0] = 0;
+                        LEDR[0] <= 1'b0;
                 endcase
             end
             H: // Space & Stagnant state
             begin
                 N_DISP_ST <= H; // Change to A to make cyclical ;)
-                LEDR[0] = 0;
-                CLK_TRG = CLK_05;
+                LEDR[0] <= 1'b0;
+                CLK_TRG <= CLK_SH;
             end
             default:
                 N_DISP_ST <= A;
