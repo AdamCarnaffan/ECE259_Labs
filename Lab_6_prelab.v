@@ -480,3 +480,110 @@ module part3(SW, KEY, LEDR, LEDG, CLOCK_50);
 //		  LEDG[0] = (N_DISP_ST == A) ? 1 : 0;
     end
 endmodule
+
+/////////////////////////
+// Part 3 - Functional //
+/////////////////////////
+
+module part3(SW, KEY, LEDR, CLOCK_50);
+    // Get externals
+    input [2:0] SW;
+    input [1:0] KEY;
+    input CLOCK_50;
+    output reg [0:0] LEDR;
+	 
+    // Wiring
+    reg [3:0] hc, length;
+    reg [25:0] clk;
+	 reg [13:0] encoder;
+    reg w;
+	 
+    // Parameters
+	 parameter J = 3'b000, K = 3'b001, L = 3'b010, M = 3'b011, N = 3'b100, O = 3'b101, P = 3'b110, Q = 3'b111; // Letter states (literal)
+	 parameter J_length = 4'd14, K_length = 4'd10, L_length = 4'd10, M_length = 4'd8, N_length = 4'd6, O_length = 4'd12, P_length = 4'd12, Q_length = 4'd14; // Display timespans
+	 parameter J_code = 14'b01110111011101, K_code = 10'b0111010111, L_code = 10'b0101011101, M_code = 8'b01110111, N_code = 6'b010111, O_code = 4'b011101110111, P_code = 12'b010111011101, Q_code = 14'b01110101110111; // State encodings
+	
+	 // FSM
+	 always @(posedge CLOCK_50 or posedge KEY[1] or posedge KEY[0])
+	 begin
+		if (KEY[1] == 1'b1) // Setter
+		begin
+			hc <= 1;
+			w <= 1; // Enable display
+			
+			case (SW[2:0]) // set new letter encodings
+				J:
+				begin
+					length <= J_length;
+					encoder <= J_code;
+				end
+				K:
+				begin
+					length <= K_length;
+					encoder <= K_code;
+				end
+				L:
+				begin
+					length <= L_length;
+					encoder <= L_code;
+				end
+				M:
+				begin
+					length <= M_length;
+					encoder <= M_code;
+				end
+				N:
+				begin
+					length <= N_length;
+					encoder <= N_code;
+				end
+				O:
+				begin
+					length <= O_length;
+					encoder <= O_code;
+				end
+				P:
+				begin
+					length <= P_length;
+					encoder <= P_code;
+				end
+				Q:
+				begin
+					length <= Q_length;
+					encoder <= Q_code;
+				end
+			endcase
+		end
+		else if (KEY[0] == 1'b1) // Reset
+		begin
+			LEDR[0] <= 0;
+			encoder <= 0;
+			hc <= 0;
+			clk <= 0; // Reset clock
+			w <= 0; // Disable display
+		end
+		else if (w)
+		begin
+			if (clk == 26'd3)
+				clk <= 0;
+			else
+			begin
+				clk <= clk + 1;
+				
+				if (hc == 4'd0 || hc > length)
+				begin
+					w <= 0;
+					hc <= 0;
+				end
+				
+				if (clk == 26'd2)
+				begin
+					hc <= hc + 1;
+					encoder <= (encoder >> 1);
+			end
+		end
+		
+		LEDR[0] <= (|hc) & encoder[0];
+	 end
+	end
+endmodule
