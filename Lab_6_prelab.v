@@ -284,3 +284,306 @@ module part3(SW, KEY, LEDR, CLOCK_50);
         endcase
     end
 endmodule
+
+//////////////////////
+// Part 3 Attempt 2 //
+//////////////////////
+
+module part3(SW, KEY, LEDR, LEDG, CLOCK_50);
+    // Get externals
+    input [2:0] SW;
+    input [1:0] KEY;
+    input CLOCK_50;
+    output reg [0:0] LEDR;
+	 output reg [0:0] LEDG;
+    // Wiring
+    reg [2:0] N_DISP_ST, DISP_ST, LTTR_ST;
+    reg [26:0] clk;
+    reg w, r, CLK_TRG;
+    // Parameters
+    parameter A = 3'b000, B = 3'b001, C = 3'b010, D = 3'b011, E = 3'b100, F = 3'b101, G = 3'b110, H = 3'b111; // Display states
+    parameter J = 3'b000, K = 3'b001, L = 3'b010, M = 3'b011, N = 3'b100, O = 3'b101, P = 3'b110, Q = 3'b111; // Letter states (literal)
+    parameter CLK_SH = 1'b0, CLK_LG = 1'b1; // Clocking 0.5s & 1.5s
+	 
+	 
+	 
+	 // Clocking
+	 always @(CLOCK_50)
+	 begin
+		if (clk > 25000000)
+		begin
+			w <= 1'b1;
+			clk = 27'b0;
+		end
+		else
+		begin
+		w <= 1'b0;
+		case(CLK_TRG)
+			CLK_SH:
+				begin
+				clk = clk + 3;
+				end
+			CLK_LG:
+				clk = clk + 1;
+			default:
+				begin
+				clk = 27'b0;
+				end
+		endcase
+		end
+	 end
+	 
+    // FSM Driver
+    always @(posedge w or posedge KEY[0])
+    begin
+		  if (KEY[0]) // Reset condition
+		  begin
+		   	DISP_ST <= H;
+		  end
+		  else
+		  begin
+				DISP_ST <= N_DISP_ST;
+		  end 
+    end
+
+    // Display Updater
+    always @(DISP_ST, KEY[1])
+    begin
+		  if (KEY[1]) 
+		  begin
+//		  LEDG[0] = 1;
+		  LTTR_ST = SW;
+		  N_DISP_ST = A;
+		  LEDR[0] = 0;
+		  end
+//		  else
+//		  begin
+        // CHANGE DISPLAY STATE
+        case (DISP_ST)
+            A: // First Char
+            begin
+//					LEDG[0] = 1;
+                N_DISP_ST = B; // Assign next state
+                case (LTTR_ST)
+                    J, L, P: // Dots
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    K, M, N, O, Q: // Dashes
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_LG;
+                    end
+                    default:
+                        LEDR[0] = 1'b0;
+                endcase
+					 
+            end
+            B: // Space
+            begin
+                N_DISP_ST = C; // Assign next state
+                LEDR[0] = 1'b0;
+                CLK_TRG <= CLK_SH;
+            end
+            C: // Second Char
+            begin
+                N_DISP_ST = D; // Assign next state
+                case (LTTR_ST)
+                    K, N: // Dots
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    J, L, M, O, P, Q: // Dashes
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_LG;
+                    end
+                    default:
+                        LEDR[0] = 1'b0;
+                endcase
+            end
+            D: // Space
+            begin
+					LEDG[0] = 1;
+                N_DISP_ST = E; // Assign next state
+                LEDR[0] = 1'b0;
+                CLK_TRG <= CLK_SH;
+            end
+            E: // Third Char
+            begin
+                N_DISP_ST = F; // Assign next state
+                case (LTTR_ST)
+                    L, Q: // Dots
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    J, K, O, P: // Dashes
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_LG;
+                    end
+                    M, N: // No values
+                    begin
+                        LEDR[0] = 1'b0;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    default:
+                        LEDR[0] = 1'b0;
+                endcase
+            end
+            F: // Space
+            begin
+                N_DISP_ST = G; // Assign next state
+                LEDR[0] = 1'b0;
+                CLK_TRG <= CLK_SH;
+            end
+            G: // Fourth Char
+            begin
+                N_DISP_ST = H; // Assign next state
+                case (LTTR_ST)
+                    L, P: // Dots
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    J, Q: // Dashes
+                    begin
+                        LEDR[0] = 1'b1;
+                        CLK_TRG <= CLK_LG;
+                    end
+                    K, M, N, O: // No values
+                    begin
+                        LEDR[0] = 1'b0;
+                        CLK_TRG <= CLK_SH;
+                    end
+                    default:
+                        LEDR[0] = 1'b0;
+                endcase
+            end
+            H: // Space & Stagnant state
+            begin
+                N_DISP_ST = A; // Change to A to make cyclical ;)
+                LEDR[0] = 1'b0;
+					 LEDG[0] = 0;
+                CLK_TRG <= CLK_SH;
+            end
+            default:
+					 begin
+                N_DISP_ST = A;
+					 LEDR[0] = 1'b0;
+					 end
+        endcase
+//		  end
+//		  LEDG[0] = (N_DISP_ST == A) ? 1 : 0;
+    end
+endmodule
+
+/////////////////////////
+// Part 3 - Functional //
+/////////////////////////
+
+module part3(SW, KEY, LEDR, CLOCK_50);
+    // Get externals
+    input [2:0] SW;
+    input [1:0] KEY;
+    input CLOCK_50;
+    output reg [0:0] LEDR;
+	 
+    // Wiring
+    reg [3:0] hc, length;
+    reg [25:0] clk;
+	 reg [13:0] encoder;
+    reg w;
+	 
+    // Parameters
+	 parameter J = 3'b000, K = 3'b001, L = 3'b010, M = 3'b011, N = 3'b100, O = 3'b101, P = 3'b110, Q = 3'b111; // Letter states (literal)
+	 parameter J_length = 4'd14, K_length = 4'd10, L_length = 4'd10, M_length = 4'd8, N_length = 4'd6, O_length = 4'd12, P_length = 4'd12, Q_length = 4'd14; // Display timespans
+	 parameter J_code = 14'b01110111011101, K_code = 10'b0111010111, L_code = 10'b0101011101, M_code = 8'b01110111, N_code = 6'b010111, O_code = 4'b011101110111, P_code = 12'b010111011101, Q_code = 14'b01110101110111; // State encodings
+	
+	 // FSM
+	 always @(posedge CLOCK_50 or posedge KEY[1] or posedge KEY[0])
+	 begin
+		if (KEY[1] == 1'b1) // Setter
+		begin
+			hc <= 1;
+			w <= 1; // Enable display
+			
+			case (SW[2:0]) // set new letter encodings
+				J:
+				begin
+					length <= J_length;
+					encoder <= J_code;
+				end
+				K:
+				begin
+					length <= K_length;
+					encoder <= K_code;
+				end
+				L:
+				begin
+					length <= L_length;
+					encoder <= L_code;
+				end
+				M:
+				begin
+					length <= M_length;
+					encoder <= M_code;
+				end
+				N:
+				begin
+					length <= N_length;
+					encoder <= N_code;
+				end
+				O:
+				begin
+					length <= O_length;
+					encoder <= O_code;
+				end
+				P:
+				begin
+					length <= P_length;
+					encoder <= P_code;
+				end
+				Q:
+				begin
+					length <= Q_length;
+					encoder <= Q_code;
+				end
+			endcase
+		end
+		else if (KEY[0] == 1'b1) // Reset
+		begin
+			LEDR[0] <= 0;
+			encoder <= 0;
+			hc <= 0;
+			clk <= 0; // Reset clock
+			w <= 0; // Disable display
+		end
+		else if (w)
+		begin
+			if (clk == 26'd3)
+				clk <= 0;
+			else
+			begin
+				clk <= clk + 1;
+				
+				if (hc == 4'd0 || hc > length)
+				begin
+					w <= 0;
+					hc <= 0;
+				end
+				
+				if (clk == 26'd2)
+				begin
+					hc <= hc + 1;
+					encoder <= (encoder >> 1);
+			end
+		end
+		
+		LEDR[0] <= (|hc) & encoder[0];
+	 end
+	end
+endmodule
