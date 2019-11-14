@@ -86,32 +86,23 @@ CHECK_WORD:
     BEQ END
 
     MOV R1, #0 ; Set the counter for the number of ones
-    MOV R2, #0x80000000 ; Default to the first bit and then shift
     MOV R3, #0 ; Set iterator to 0 to verify completion
-    PUSH {R6-R10}
     BL COUNT_ONES ; Move to the word initiator
-    POP {R6-R10}
     CMP R8, R1 ; Compare longest current word to longest longest
     MOVLE R8, R1 ; If R1 is big boi, make the swap
 
     LDR R0, [R6, R7] ; Reload state
     MOV R1, #0 ; Set the counter for the number of leading to zero
-    MOV R2, #0x80000000 ; Default to the first bit and then shift
     MOV R3, #0 ; Set iterator to 0 to verify a complete set of zeros
-    PUSH {R6-R10}
     BL COUNT_LEADING ; Move to the leading counter
-    POP {R6-R10}
     CMP R9, R1 ; Compare longest current word to longest longest
     MOVLE R9, R1 ; If R1 is big boi, make the swap
     
     ; Dont reload state because we move from the end
     LDR R0, [R6, R7] ; Reload state
     MOV R1, #0 ; Set the counter for the number of leading to zero
-    MOV R2, #0x00000001 ; Default to the first bit and then shift
     MOV R3, #0 ; Set iterator to 0 to verify a complete set of zeros
-    PUSH {R6-R10}
     BL COUNT_TRAILING ; Move to the trailing counter
-    POP {R6-R10}
     CMP R10, R1 ; Compare longest current word to longest longest
     MOVLE R10, R1 ; If R1 is big boi, make the swap
 
@@ -119,10 +110,10 @@ CHECK_WORD:
     B CHECK_WORD ; Continue looping word checks
 
 COUNT_LEADING:
-    MOV R5, R0 ; Load first position again
-    LSL R5, R3 ; Shift by the iterator's count
-    AND R5, R5, R2 ; And the MSB with the shifted value
-    CMP R5, #0
+    MOV R2, R0 ; Load first position again
+    LSL R2, R3 ; Shift by the iterator's count
+    AND R2, R2, #0x80000000 ; And the MSB with the shifted value
+    CMP R2, #0
     MOVNE PC, LR ; Move back if the value is not zero
     CMP R3, #32
     MOVEQ PC, LR ; Move back if full string is 0s
@@ -131,10 +122,10 @@ COUNT_LEADING:
     B COUNT_LEADING
 
 COUNT_TRAILING:
-    MOV R5, R0 ; Load first position again
-    LSR R5, R3 ; Shift by the iterator's count
-    AND R5, R5, R2 ; And the MSB with the shifted value
-    CMP R5, #0
+    MOV R2, R0 ; Load first position again
+    LSR R2, R3 ; Shift by the iterator's count
+    AND R2, R2, #0x00000001 ; And the MSB with the shifted value
+    CMP R2, #0
     MOVNE PC, LR ; Move back if the value is not zero
     CMP R3, #32
     MOVEQ PC, LR ; Move back if full string is 0s
@@ -143,10 +134,10 @@ COUNT_TRAILING:
     B COUNT_TRAILING
 
 COUNT_ONES:
-    MOV R5, R0 ; Load first position again
-    LSL R5, R3 ; Shift by the iterator's count
-    AND R5, R5, R2 ; And the MSB with the shifted value
-    CMP R5, #0
+    MOV R2, R0 ; Load first position again
+    LSL R2, R3 ; Shift by the iterator's count
+    AND R2, R2, #0x80000000 ; And the MSB with the shifted value
+    CMP R2, #0
     ADDNE R1, #1 ; Add to counter if 1
     CMP R3, #32
     MOVEQ PC, LR ; Move back if full string is 0s
@@ -155,6 +146,6 @@ COUNT_ONES:
 
 END: B END ; End loop
 
-TEST_NUM: .word 0x103fe00f, 0x1111FF, 0xA4523E, 0x1233AABE, 0x00000000, 0x12598AC1, 0xFFF111AA, 0xAA976612, 0xAABE0192, 0xFF145F02, -1 ; Test Case
+TEST_NUM: .word 0x103fe00f, 0x1111FF, 0xA4523E, 0x1233AABE, 0x000FF000, 0x12598AC1, 0xFFF111AA, 0xAA976612, 0xAABE0192, 0xFF145F02, -1 ; Test Case
 
 .end
