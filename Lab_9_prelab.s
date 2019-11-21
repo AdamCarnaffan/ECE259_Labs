@@ -22,15 +22,19 @@ return L
 
 _start:
     LDR R8, =LIST ; Load the list into R2
-    LDR R5, R2 ; Get the list length into R5
+    LDR R5, [R8] ; Get the list length into R5 (Probably don't need to store)
+    SUB R9, R5, #1 ; Make a value for iterations (1 less than count)
     MOV R6, #0 ; Get first iterator
     MOV R7, #0 ; Get second iterator
     ADD R8, #4 ; Shift selector to first list item
 
 SORT_LOOP: 
-    CMP R6, R5
-    MOVEQ END ; Dip to the end if r6 has completed its iterations
-    MUL R1, #4, R6 ; Get the number of addresses by which to shift R0
+    CMP R6, R9
+    ADDEQ R7, #1 ; Iterate the external iterator
+    MOVEQ R6, #0 ; Reset first iterator
+    CMP R7, R9
+    BEQ END ; Dip to the end if r6 has completed its iterations
+    MOV R1, R6, LSL #2 ; Get the number of addresses by which to shift R0
     MOV R0, R8 ; Load the origin register with the origin address
     ADD R0, R1 ; Shift to the target register from the origin
     BL SWAP ; Make the check for a swap
@@ -51,5 +55,19 @@ SWAP:
 END: B END
 
 LIST: .word 10, 1400, 45, 23, 5, 3, 8, 17, 4, 20, 33 ; Word count, followed by the list of words
+
+.end
+
+/* ===================
+   == led_bouncer.s ==
+   =================== */
+
+.text
+.global _start
+
+_start:
+    
+
+
 
 .end
