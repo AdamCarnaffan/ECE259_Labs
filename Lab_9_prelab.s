@@ -66,64 +66,64 @@ LIST: .word 10, 1400, 45, 23, 5, 3, 8, 17, 4, 20, 33 ; Word count, followed by t
 .global _start
 
 _start:
-	LDR R9, =0xFF200050 ; Store address of KEY[0]
-    LDR R7, =0xFF200000 ; Store address of LEDR[0]
-	LDR R8, =0xFFFEC600 ; Store address of Timer
-	LDR R0, =500000000 ; Clock control value
-	STR R0, [R8] ; Push to load timer
-	MOV R0, #0b011
-	STR R0, [R8, #8] ; Write control
-	MOV R2, #1
-	STR R2, [R1]
-	MOV R3, #0x84 ; Store first LED values
-	MOV R4, #0 ; Director
-	MOV R5, #0 ; Holder
+   LDR R9, =0xFF200050 ; Store address of KEY[0]
+   LDR R7, =0xFF200000 ; Store address of LEDR[0]
+   LDR R8, =0xFFFEC600 ; Store address of Timer
+   LDR R0, =500000000 ; Clock control value
+   STR R0, [R8] ; Push to load timer
+   MOV R0, #0b011
+   STR R0, [R8, #8] ; Write control
+   MOV R2, #1
+   STR R2, [R1]
+   MOV R3, #0x84 ; Store first LED values
+   MOV R4, #0 ; Director
+   MOV R5, #0 ; Holder
 
 SHIFT:
-	; Check hold
-	CMP R5, #1
-	BEQ DELAY
-	; Check first 4 bits direction change
-	MOV R0, #0x1F
-	AND R0, R0, R3
-	CMP R0, #1
-	MOVEQ R4, #1 ; Set to left
-	CMP R0, #0x10
-	MOVEQ R4, #0 ; Set to right
-	; MAKE LEFT SIDE SHIFT
-	MOV R1, #0x3E0
-	AND R1, R1, R3
-	CMP R4, #0
-	LSLEQ R1, #1
-	LSRNE R1, #1
-	; MAKE RIGHT SIDE SHIFT
-	MOV R0, #0x1F
-	AND R0, R0, R3
-	CMP R4, #0
-	LSLNE R0, #1
-	LSREQ R0, #1
-	; SAVE PRODUCT
-	ADD R3, R0, R1 ; Concatonate bits
-	
+   ; Check hold
+   CMP R5, #1
+   BEQ DELAY
+   ; Check first 4 bits direction change
+   MOV R0, #0x1F
+   AND R0, R0, R3
+   CMP R0, #1
+   MOVEQ R4, #1 ; Set to left
+   CMP R0, #0x10
+   MOVEQ R4, #0 ; Set to right
+   ; MAKE LEFT SIDE SHIFT
+   MOV R1, #0x3E0
+   AND R1, R1, R3
+   CMP R4, #0
+   LSLEQ R1, #1
+   LSRNE R1, #1
+   ; MAKE RIGHT SIDE SHIFT
+   MOV R0, #0x1F
+   AND R0, R0, R3
+   CMP R4, #0
+   LSLNE R0, #1
+   LSREQ R0, #1
+   ; SAVE PRODUCT
+   ADD R3, R0, R1 ; Concatonate bits
+   	
 DISPLAY:
-	STR R3, [R7] ; SET LEDs
+   STR R3, [R7] ; SET LEDs
 
 DELAY: 
-	LDR R0, [R9] ; Read Key Status
-	CMP R0, #0
-	BNE KEY_WAIT ; Jump to key handler on press
-	LDR R0, [R8, #0xC] ; Read Status
-	CMP R0, #0
-	BEQ DELAY
-	STR R0, [R8, #0xC] ; Write Status
-	B SHIFT
-
+   LDR R0, [R9] ; Read Key Status
+   CMP R0, #0
+   BNE KEY_WAIT ; Jump to key handler on press
+   LDR R0, [R8, #0xC] ; Read Status
+   CMP R0, #0
+   BEQ DELAY
+   STR R0, [R8, #0xC] ; Write Status
+   B SHIFT
+   
 KEY_WAIT:
-	LDR R0, [R9] ; Read Key Status
-	CMP R0, #0
-	EOREQ R5, R5, #1 ; Flip holder
-	BEQ DELAY
-	B KEY_WAIT
+   LDR R0, [R9] ; Read Key Status
+   CMP R0, #0
+   EOREQ R5, R5, #1 ; Flip holder
+   BEQ DELAY
+   B KEY_WAIT
 
 END: B END ; Da end loop brah
 
