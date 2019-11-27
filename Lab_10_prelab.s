@@ -164,7 +164,7 @@
    ================= */
 
 				.include	"address_map_arm.s"
-				.include "defines.s"
+				.include "define.s"
 				.include	"interrupt_ID.s"
 /* This file:
  * 1. defines exception vectors for the A9 processor
@@ -199,13 +199,13 @@ SERVICE_IRQ:
     			LDR		R5, [R4, #ICCIAR] 			// read the interrupt ID
 
 PRIV_TIMER_CHECK:
-    			... [FILL IN CODE HERE ]
+    			... [FILL IN CODE HERE ] XXX
     
 KEYS_CHECK:
-    			... [FILL IN CODE HERE ]
+    			... [FILL IN CODE HERE ] XXX
 
 EXIT_IRQ:
-    			/* Write to the End of Interrupt Register (ICCEOIR) */
+    			/* Write to the End of Interrupt Register (ICCEOIR) */ XXX
     			STR		R5, [R4, #ICCEOIR]
     
     			POP		{R0-R5, LR}
@@ -331,14 +331,14 @@ CONFIG_INTERRUPT:
 			.text
 			.global	_start
 _start:
-			... initialize the IRQ stack pointer ...
+			... initialize the IRQ stack pointer ... XXX
 			... initialize the SVC stack pointer ...
 
 			BL			CONFIG_GIC				// configure the ARM generic interrupt controller
 			BL			CONFIG_PRIV_TIMER		// configure the MPCore private timer
 			BL			CONFIG_KEYS				// configure the pushbutton KEYs
 			
-			... enable ARM processor interrupts ...
+			... enable ARM processor interrupts ... XXX
 
 			LDR		R6, =0xFF200000 		// red LED base address
 MAIN:
@@ -349,13 +349,13 @@ MAIN:
 /* Configure the MPCore private timer to create interrupts every 1/10 second */
 CONFIG_PRIV_TIMER:
 			LDR		R0, =0xFFFEC600 		// Timer base address
-			... code not shown
+			... code not shown XXX
 			MOV 		PC, LR 					// return
 
 /* Configure the KEYS to generate an interrupt */
 CONFIG_KEYS:
 			LDR 		R0, =0xFF200050 		// KEYs base address
-			... code not shown
+			... code not shown XXX
 			MOV 		PC, LR 					// return
 
 			.global	LEDR_DIRECTION
@@ -396,12 +396,12 @@ SWEEP:		LDR		R0, =LEDR_DIRECTION	// put shifting direction into R2
 				LDR		R3, [R1]
 
 				...
-TOCENTRE:		...
+TOCENTRE:		... XXX
 				...
 
 C_O:			MOV		R2, #1					// change direction to outside
 TOOUTSIDE:		...
-				...
+				... XXX
 
 O_C:			MOV		R2, #0					// change direction to centre
 				B			TOCENTRE
@@ -427,11 +427,12 @@ KEY_ISR: 		LDR		R0, =KEY_BASE			// base address of KEYs parallel port
 					LDR		R1, [R0, #0xC]			// read edge capture register
 					STR		R1, [R0, #0xC]			// clear the interrupt
 
-CHK_KEY3:		...
+CHK_KEY3:		... XXX
 
 START_STOP:		LDR		R0, =MPCORE_PRIV_TIMER		// timer base address
-					LDR		R1, [R0, #0x8]			// read timer control register
-					...
+                LDR		R1, [R0, #0x8]			// read timer control register
+                EOR     R1, #1
+                STR     R1, [R0, #0x8]      // Send'er back in
 
 END_KEY_ISR:	MOV	PC, LR
 					.end
