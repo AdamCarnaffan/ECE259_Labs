@@ -199,13 +199,20 @@ SERVICE_IRQ:
     			LDR		R5, [R4, #ICCIAR] 			// read the interrupt ID
 
 PRIV_TIMER_CHECK:
-    			... [FILL IN CODE HERE ] XXX
+    			CMP R5, #MPCORE_PRIV_TIMER_IRQ
+                BNE KEYS_CHECK
+
+                BL PRIV_TIMER_ISR
+                B EXIT_IRQ
     
 KEYS_CHECK:
-    			... [FILL IN CODE HERE ] XXX
+    			CMP R5, #KEYS_IRQ
+                BNE SERVICE_UND
+
+                BL KEY_ISR
 
 EXIT_IRQ:
-    			/* Write to the End of Interrupt Register (ICCEOIR) */ XXX
+    			/* Write to the End of Interrupt Register (ICCEOIR) */
     			STR		R5, [R4, #ICCEOIR]
     
     			POP		{R0-R5, LR}
@@ -316,58 +323,31 @@ CONFIG_INTERRUPT:
 
 				.end
 
-/* ============
-   == main.s ==
-   ============ */
+/* ===============
+   == key_ISR.s ==
+   =============== */
 
-.include "address_map_arm.s"
+/***************************************************************************************
+ * Pushbutton - Interrupt Service Routine                                
+ *                                                                          
+ * This routine checks which KEY has been pressed.  If KEY3 it stops/starts the timer.
+****************************************************************************************/
+					.global	KEY_ISR
+KEY_ISR: 		LDR		R0, =KEY_BASE			// base address of KEYs parallel port
+					LDR		R1, [R0, #0xC]			// read edge capture register
+					STR		R1, [R0, #0xC]			// clear the interrupt
 
-/* 
- * This program demonstrates the use of interrupts using the KEY and timer ports. It
- * 	1. displays a sweeping red light on LEDR, which moves left and right
- * 	2. stops/starts the sweeping motion if KEY3 is pressed
- * Both the timer and KEYs are handled via interrupts
-*/
-			.text
-			.global	_start
-_start:
-			... initialize the IRQ stack pointer ... XXX
-			... initialize the SVC stack pointer ...
+CHK_KEY3:		TST R1, #0b1000
+                BEQ END_KEY_ISR
 
-			BL			CONFIG_GIC				// configure the ARM generic interrupt controller
-			BL			CONFIG_PRIV_TIMER		// configure the MPCore private timer
-			BL			CONFIG_KEYS				// configure the pushbutton KEYs
-			
-			... enable ARM processor interrupts ... XXX
+START_STOP:		LDR		R0, =MPCORE_PRIV_TIMER		// timer base address
+                LDR		R1, [R0, #0x8]			// read timer control register
+                EOR     R1, #1
+                STR     R1, [R0, #0x8]      // Send'er back in
 
-			LDR		R6, =0xFF200000 		// red LED base address
-MAIN:
-			LDR		R4, LEDR_PATTERN		// LEDR pattern; modified by timer ISR
-			STR 		R4, [R6] 				// write to red LEDs
-			B 			MAIN
-
-/* Configure the MPCore private timer to create interrupts every 1/10 second */
-CONFIG_PRIV_TIMER:
-			LDR		R0, =0xFFFEC600 		// Timer base address
-			... code not shown XXX
-			MOV 		PC, LR 					// return
-
-/* Configure the KEYS to generate an interrupt */
-CONFIG_KEYS:
-			LDR 		R0, =0xFF200050 		// KEYs base address
-			... code not shown XXX
-			MOV 		PC, LR 					// return
-
-			.global	LEDR_DIRECTION
-
-LEDR_DIRECTION:
-			.word 	0							// 0 means means moving to centre; 1 means moving to outside
-
-			.global	LEDR_PATTERN
-LEDR_PATTERN:
-			.word 	0x201	// 1000000001
-
-
+END_KEY_ISR:	MOV	PC, LR
+					.end
+	
 /* =================
    == timer_ISR.s ==
    ================= */
@@ -395,13 +375,53 @@ SWEEP:		LDR		R0, =LEDR_DIRECTION	// put shifting direction into R2
 				LDR		R1, =LEDR_PATTERN		// put LEDR pattern into R3
 				LDR		R3, [R1]
 
-				...
-TOCENTRE:		... XXX
-				...
+            PUSH {R4-R7}
+
+            // Extract LEDR left side
+            AND R4, R3, #0x1F
+
+            // Check if we need to swap direction
+            CMP R4, #1
+            BEQ O_C
+            CMP R4, #0x10
+            BEQ C_O
+
+            // Jump to place to make the flow occur
+            CMP R2, #0
+            BEQ TOCENTRE
+            BNE TOOUTSIDE
+	
+TOCENTRE:		
+                // MAKE LEFT SIDE SHIFT
+                MOV R4, #0x3E0
+                AND R4, R4, R3
+                LSR R4, #1
+
+                // MAKE RIGHT SIDE SHIFT
+                MOV R5, #0x1F
+                AND R5, R5, R3
+                LSL R5, #1
+
+                ADD R3, R4, R5
+
+                B DONE_SWEEP
 
 C_O:			MOV		R2, #1					// change direction to outside
-TOOUTSIDE:		...
-				... XXX
+
+TOOUTSIDE:		
+                // MAKE LEFT SIDE SHIFT
+                MOV R4, #0x3E0
+                AND R4, R4, R3
+                LSL R4, #1
+
+                // MAKE RIGHT SIDE SHIFT
+                MOV R5, #0x1F
+                AND R5, R5, R3
+                LSR R5, #1
+
+                ADD R3, R4, R5
+
+                B DONE_SWEEP
 
 O_C:			MOV		R2, #0					// change direction to centre
 				B			TOCENTRE
@@ -411,29 +431,71 @@ DONE_SWEEP:
 				STR		R3, [R1]					// put LEDR pattern back onto stack
 	
 END_TIMER_ISR:
+                POP {R4-R7}
 				MOV		PC, LR
 
-/* ===============
-   == key_ISR.s ==
-   =============== */
 
-/***************************************************************************************
- * Pushbutton - Interrupt Service Routine                                
- *                                                                          
- * This routine checks which KEY has been pressed.  If KEY3 it stops/starts the timer.
-****************************************************************************************/
-					.global	KEY_ISR
-KEY_ISR: 		LDR		R0, =KEY_BASE			// base address of KEYs parallel port
-					LDR		R1, [R0, #0xC]			// read edge capture register
-					STR		R1, [R0, #0xC]			// clear the interrupt
+/* ============
+   == main.s ==
+   ============ */
 
-CHK_KEY3:		... XXX
+.include "address_map_arm.s"
 
-START_STOP:		LDR		R0, =MPCORE_PRIV_TIMER		// timer base address
-                LDR		R1, [R0, #0x8]			// read timer control register
-                EOR     R1, #1
-                STR     R1, [R0, #0x8]      // Send'er back in
+/* 
+ * This program demonstrates the use of interrupts using the KEY and timer ports. It
+ * 	1. displays a sweeping red light on LEDR, which moves left and right
+ * 	2. stops/starts the sweeping motion if KEY3 is pressed
+ * Both the timer and KEYs are handled via interrupts
+*/
+			.text
+			.global	_start
+_start:
+			// initialize the IRQ stack pointer ... 
+            MOV R0, #0b10010
+            MSR CPSR, R0 // Load the big mode onto the CPSR
+            LDR SP, =0x20000
 
-END_KEY_ISR:	MOV	PC, LR
-					.end
-	
+			// initialize the SVC stack pointer ...
+            MOV R0, #0b10011
+            MSR CPSR, R0
+            LDR SP, =0x3FFFFFFC
+
+			BL			CONFIG_GIC				// configure the ARM generic interrupt controller
+			BL			CONFIG_PRIV_TIMER		// configure the MPCore private timer
+			BL			CONFIG_KEYS				// configure the pushbutton KEYs
+			
+			// enable ARM processor interrupts ...
+            MSR CPSR, #0b00010011
+
+			LDR		R6, =0xFF200000 		// red LED base address
+MAIN:
+			LDR		R4, LEDR_PATTERN		// LEDR pattern; modified by timer ISR
+			STR 		R4, [R6] 				// write to red LEDs
+			B 			MAIN
+
+/* Configure the MPCore private timer to create interrupts every 1/10 second */
+CONFIG_PRIV_TIMER:
+			LDR		R0, =0xFFFEC600 		// Timer base address
+			LDR     R1, =20000000
+            STR R1, [R0]
+            MOV R1, #0b111
+            STR R1, [R0, #8]
+			MOV 		PC, LR 					// return
+
+/* Configure the KEYS to generate an interrupt */
+CONFIG_KEYS:
+			LDR 		R0, =0xFF200050 		// KEYs base address
+			MOV R1, #0b1000 // Mask to key 3
+            STR R1, [R0, #8]
+			MOV 		PC, LR 					// return
+
+			.global	LEDR_DIRECTION
+
+LEDR_DIRECTION:
+			.word 	0							// 0 means means moving to centre; 1 means moving to outside
+
+			.global	LEDR_PATTERN
+LEDR_PATTERN:
+			.word 	0x201	// 1000000001
+
+
